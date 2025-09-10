@@ -1,0 +1,131 @@
+{\rtf1\ansi\ansicpg932\cocoartf2821
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww22400\viewh16120\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 body \{\
+    font-family: 'Inter', sans-serif;\
+    background: linear-gradient(-45deg, #111827, #1f2937, #374151, #4b5563);\
+    background-size: 400% 400%;\
+    animation: gradient 15s ease infinite;\
+\}\
+@keyframes gradient \{ 0% \{ background-position: 0% 50%; \} 50% \{ background-position: 100% 50%; \} 100% \{ background-position: 0% 50%; \} \}\
+.rank-badge \{ width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; flex-shrink: 0; \}\
+.rank-1 \{ background-color: #f9b115; box-shadow: 0 0 15px #f9b115; \}\
+.rank-2 \{ background-color: #adb5bd; box-shadow: 0 0 15px #adb5bd; \}\
+.rank-3 \{ background-color: #cd7f32; box-shadow: 0 0 15px #cd7f32; \}\
+.tab-button.active \{ color: white; border-color: #6366f1; \}\
+.switch \{ position: relative; display: inline-block; width: 50px; height: 28px; \}\
+.switch input \{ opacity: 0; width: 0; height: 0; \}\
+.slider \{ position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4b5563; transition: .4s; border-radius: 28px; \}\
+.slider:before \{ position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; \}\
+input:checked + .slider \{ background-color: #4f46e5; \}\
+input:checked + .slider:before \{ transform: translateX(22px); \}\
+#toast-container \{ position: fixed; top: 20px; right: 20px; z-index: 1050; \}\
+.toast \{ background-color: #1f2937; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-left: 4px solid; margin-bottom: 10px; opacity: 0; transform: translateX(100%); animation: slideIn 0.5s forwards; \}\
+.toast.success \{ border-color: #22c55e; \} .toast.error \{ border-color: #ef4444; \} .toast.info \{ border-color: #3b82f6; \}\
+@keyframes slideIn \{ to \{ opacity: 1; transform: translateX(0); \} \}\
+\
+.meter-container \{ width: 160px; height: 80px; position: relative; margin: 0 auto; \}\
+.meter-bg, .meter-value \{ width: 160px; height: 80px; border-radius: 80px 80px 0 0; position: absolute; top: 0; left: 0; \}\
+.meter-bg \{ background: linear-gradient(to right, #ef4444, #facc15, #22c55e); \}\
+.meter-value \{ background-color: #374151; clip-path: polygon(50% 100%, 0 100%, 0 0, 100% 0, 100% 100%); \}\
+.meter-pointer \{ width: 2px; height: 75px; background-color: white; position: absolute; bottom: 0; left: 50%; transform-origin: bottom center; transition: transform 0.5s ease-out; \}\
+.meter-center \{ width: 12px; height: 12px; background-color: white; border-radius: 50%; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); \}\
+\
+@keyframes flash-yellow \{\
+    0%, 100% \{ border-color: #4b5563; \}\
+    50% \{ border-color: #fbbf24; box-shadow: 0 0 15px #fbbf24; \}\
+\}\
+.signal-changed \{\
+    animation: flash-yellow 1.5s infinite;\
+\}\
+\
+.price-ticker \{\
+    overflow: hidden;\
+    position: relative;\
+    background: rgba(17, 24, 39, 0.8);\
+    border-bottom: 1px solid #374151;\
+    padding: 0.5rem 0;\
+\}\
+.ticker-wrap \{\
+    width: 100%;\
+    display: flex;\
+\}\
+.ticker-container \{\
+    display: flex;\
+    animation: ticker-scroll 60s linear infinite;\
+\}\
+.ticker-item \{\
+    display: flex;\
+    align-items: center;\
+    padding: 0 1.5rem;\
+    white-space: nowrap;\
+    font-size: 0.875rem;\
+\}\
+@keyframes ticker-scroll \{\
+    0% \{ transform: translateX(0); \}\
+    100% \{ transform: translateX(-100%); \}\
+\}\
+\
+.progress-bar-bg \{\
+    background-color: #374151;\
+    border-radius: 9999px;\
+    height: 8px;\
+    width: 100%;\
+    position: relative;\
+    overflow: hidden;\
+\}\
+.progress-bar-fill \{\
+    height: 100%;\
+    border-radius: 9999px;\
+    transition: width 0.3s ease-in-out;\
+\}\
+.timeframe-btn \{\
+    padding: 4px 8px;\
+    font-size: 12px;\
+    border-radius: 6px;\
+    background-color: #4b5563;\
+    color: #d1d5db;\
+    transition: background-color 0.2s;\
+\}\
+.timeframe-btn:hover \{\
+    background-color: #6b7280;\
+\}\
+.timeframe-btn.active \{\
+    background-color: #6366f1;\
+    color: white;\
+    font-weight: bold;\
+\}\
+.tooltip \{ position: relative; display: inline-block; cursor: pointer; \}\
+.tooltip .tooltiptext \{ visibility: hidden; width: 220px; background-color: #1f2937; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -110px; opacity: 0; transition: opacity 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.5); font-size: 12px;\}\
+.tooltip:hover .tooltiptext \{ visibility: visible; opacity: 1; \}\
+\
+.impulse-dot \{\
+    width: 10px;\
+    height: 10px;\
+    border-radius: 50%;\
+    display: inline-block;\
+    margin-left: 8px;\
+\}\
+.impulse-green \{ background-color: #22c55e; box-shadow: 0 0 8px #22c55e; \}\
+.impulse-red \{ background-color: #ef4444; box-shadow: 0 0 8px #ef4444; \}\
+.impulse-blue \{ background-color: #3b82f6; box-shadow: 0 0 8px #3b82f6; \}\
+\
+\
+@media (max-width: 768px) \{\
+    .container \{\
+        padding: 0.5rem;\
+    \}\
+    .control-panel \{\
+        flex-direction: column;\
+        gap: 1rem;\
+    \}\
+    .tab-buttons \{\
+        overflow-x: auto;\
+        white-space: nowrap;\
+    \}\
+\}\
+}
