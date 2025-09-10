@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptocurrency Integrated Analysis Tool - 完成版</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <div id="toast-container"></div>
+    
+    <!-- Price Ticker -->
+    <div class="price-ticker">
+        <div class="ticker-wrap">
+            <div id="price-ticker-container" class="ticker-container">
+                <!-- Ticker items will be populated by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="container mx-auto p-4 max-w-5xl">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-4xl font-bold text-white mb-2">Integrated Analysis Tool</h1>
+            <p class="text-gray-400">デイトレードダッシュボードと詳細分析エンジンを統合</p>
+            <div id="header-menu" class="absolute top-0 right-0">
+                <button id="menu-button" class="p-2 rounded-md hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </button>
+                <div id="menu-dropdown" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20 hidden">
+                    <a href="#" id="menu-settings" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">設定＆バックテスト</a>
+                    <a href="#" id="menu-ai-analysis" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">AIモデル分析</a>
+                    <a href="#" id="menu-notifications" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">通知設定</a>
+                    <a href="#" id="menu-qa" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">Q&A ヘルプ</a>
+                </div>
+            </div>
+        </header>
+        <main id="main-content">
+             <!-- Quick Price View -->
+            <div id="quick-price-view" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                <!-- Quick price items will be populated by JS -->
+            </div>
+
+            <!-- Daytrade Dashboard -->
+            <div class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl shadow-lg mb-8 border border-gray-700">
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">注目通貨ダッシュボード</h2>
+                <div id="dashboard-meters-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <!-- Dashboard meters will be populated here -->
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl shadow-lg mb-8 border border-gray-700">
+                <div class="control-panel flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="w-full md:w-auto flex-shrink-0">
+                        <label for="timeframe-select" class="block text-sm font-semibold text-gray-400 mb-1">分析時間足</label>
+                        <select id="timeframe-select" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="minute">1分足 (スキャルピング)</option>
+                            <option value="5minute">5分足 (デイトレード)</option>
+                            <option value="15minute">15分足 (デイトレード)</option>
+                            <option value="hour" selected>1時間足 (スイング)</option>
+                            <option value="4hour">4時間足 (スイング)</option>
+                            <option value="day">日足 (長期)</option>
+                        </select>
+                    </div>
+                    <button id="run-analysis" class="w-full md:w-auto flex-grow bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center text-lg shadow-lg hover:shadow-indigo-500/50 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span id="button-text">総合分析を実行</span>
+                    </button>
+                    <button id="optimize-indicators" class="w-full md:w-auto flex-shrink-0 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center text-lg shadow-lg hover:shadow-green-500/50 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg id="optimize-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>指標の最適化</span>
+                    </button>
+                    <div class="flex items-center gap-4 text-white flex-shrink-0">
+                        <label for="auto-refresh-toggle" class="font-semibold">自動更新</label>
+                        <label class="switch"><input type="checkbox" id="auto-refresh-toggle"><span class="slider"></span></label>
+                        <div id="countdown-timer" class="text-sm text-gray-400 w-28"></div>
+                    </div>
+                </div>
+                <div id="optimization-status" class="text-xs text-center text-gray-400 mt-2 h-4"></div>
+            </div>
+
+            <!-- Open Positions Section -->
+            <div id="positions-section" class="mb-8 hidden">
+                <h2 class="text-2xl font-bold text-white mb-4">保有ポジション</h2>
+                <div id="positions-container" class="space-y-4"></div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <!-- Tabs -->
+                    <div class="mb-6 flex border-b border-gray-700 tab-buttons">
+                        <button id="tab-ranking" class="tab-button active px-4 py-2 text-white border-b-2 border-indigo-500 font-semibold">ランキング</button>
+                        <button id="tab-all" class="tab-button px-4 py-2 text-gray-400 border-b-2 border-transparent font-semibold">全通貨ペア</button>
+                        <button id="tab-history" class="tab-button px-4 py-2 text-gray-400 border-b-2 border-transparent font-semibold">分析履歴</button>
+                        <button id="tab-trade-history" class="tab-button px-4 py-2 text-gray-400 border-b-2 border-transparent font-semibold">取引履歴</button>
+                    </div>
+                    <!-- Tab Content -->
+                    <div id="tab-content">
+                        <div id="ranking-panel" class="space-y-6"></div>
+                        <div id="all-pairs-panel" class="hidden space-y-6"></div>
+                        <div id="history-panel" class="hidden space-y-8"></div>
+                        <div id="trade-history-panel" class="hidden space-y-4"></div>
+                    </div>
+                </div>
+                <!-- Accuracy Tracker Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-gray-700 sticky top-4">
+                        <div class="flex items-center justify-center gap-2 mb-4">
+                            <h2 class="text-2xl font-bold text-white text-center">シグナル正答率</h2>
+                            <div class="tooltip">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                <span class="tooltiptext" id="accuracy-tooltip-text">判定ロジックの詳細</span>
+                            </div>
+                        </div>
+                        <div class="text-center mb-4"><p id="accuracy-rate" class="text-5xl font-bold text-indigo-400">---</p></div>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg"><span class="font-semibold text-gray-300">検証済みシグナル数:</span><span id="total-verified" class="font-bold text-white">0</span></div>
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg"><span class="font-semibold text-green-400">成功シグナル数:</span><span id="successful-signals" class="font-bold text-white">0</span></div>
+                            <div class="flex justify-between items-center bg-gray-700/50 p-3 rounded-lg"><span class="font-semibold text-red-400">失敗シグナル数:</span><span id="failed-signals" class="font-bold text-white">0</span></div>
+                        </div>
+                        <button id="reset-history-btn" class="w-full mt-4 text-xs bg-gray-600 hover:bg-gray-500 text-white py-2 px-3 rounded-lg transition-colors">全履歴をリセット</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Modals -->
+        <div id="chart-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl h-3/4 flex flex-col border border-gray-700">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                    <h3 class="text-lg font-bold text-white" id="chart-modal-title">チャート分析</h3>
+                    <div id="chart-timeframe-selector" class="flex-grow flex justify-center gap-1">
+                        <!-- Timeframe buttons will be populated by JS -->
+                    </div>
+                    <button id="close-chart-modal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+                </div>
+                <div class="flex-1 p-4 relative">
+                    <div id="chart-loading-overlay" class="absolute inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-10">
+                        <p class="text-white text-lg">チャートデータを読み込み中...</p>
+                    </div>
+                    <canvas id="chart-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="trade-entry-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-sm border border-gray-700">
+                <div class="p-6 space-y-4">
+                    <h3 id="trade-entry-title" class="text-xl font-bold text-white text-center"></h3>
+                    <div>
+                        <label for="trade-amount" class="block text-sm font-semibold text-gray-400 mb-1">取引金額 (円)</label>
+                        <input type="number" id="trade-amount" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" placeholder="例: 100000">
+                    </div>
+                    <div class="flex gap-4">
+                        <button id="cancel-trade-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">キャンセル</button>
+                        <button id="confirm-trade-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-gray-700">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700"><h3 class="text-lg font-bold text-white">設定＆バックテスト</h3><button id="close-settings-modal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button></div>
+                <div class="p-6 overflow-y-auto text-gray-300 space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4">分析ロジックのカスタマイズ</h3>
+                        <div id="customization-form" class="space-y-4"></div>
+                        <button id="save-settings-btn" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">設定を保存</button>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4">バックテスト (過去500件)</h3>
+                        <button id="run-backtest-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg mb-4 flex items-center justify-center">
+                            <svg id="backtest-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            バックテスト実行
+                        </button>
+                        <div id="backtest-results" class="hidden space-y-2 text-center bg-gray-900/50 p-4 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="qa-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-gray-700">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700"><h3 class="text-lg font-bold text-white">Q&A ヘルプ</h3><button id="close-qa-modal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button></div>
+                <div class="p-6 overflow-y-auto text-gray-300">
+                    <h3 class="text-xl font-bold text-white mb-4">AIヘルプアシスタント</h3>
+                    <p class="text-gray-400 mb-4">このツールや仮想通貨に関する質問を入力してください。</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="qa-input" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="例: 総合スコアって何？">
+                        <button id="qa-submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">質問</button>
+                    </div>
+                    <div id="qa-response-container" class="mt-4 p-4 bg-gray-900/50 rounded-lg min-h-[100px]"></div>
+                </div>
+            </div>
+        </div>
+        <div id="notifications-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700"><h3 class="text-lg font-bold text-white">通知設定</h3><button id="close-notifications-modal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button></div>
+                <div class="p-6 space-y-4 text-gray-300">
+                    <div class="flex items-center justify-between">
+                        <label for="desktop-notify-toggle">デスクトップ通知</label>
+                        <label class="switch"><input type="checkbox" id="desktop-notify-toggle"><span class="slider"></span></label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label for="sound-notify-toggle">通知音</label>
+                        <label class="switch"><input type="checkbox" id="sound-notify-toggle"><span class="slider"></span></label>
+                    </div>
+                    <div>
+                        <label for="notify-threshold" class="block text-sm font-semibold mb-1">通知スコア閾値</label>
+                        <input type="range" id="notify-threshold" min="4" max="10" step="0.5" class="w-full">
+                        <p class="text-center text-sm text-gray-400">スコア <span id="notify-threshold-value"></span> 以上で通知</p>
+                    </div>
+                    <button id="save-notify-settings-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">設定を保存</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Model Modal -->
+        <div id="ai-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-md border border-gray-700">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700"><h3 class="text-lg font-bold text-white">AIモデル分析 (Transformer)</h3><button id="close-ai-modal" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button></div>
+                <div class="p-6 space-y-4 text-gray-300">
+                    <p class="text-sm text-gray-400">現在のチャートパターンを基に、Transformerモデルが次の価格変動を予測します。(これはデモンストレーションです)</p>
+                    <button id="run-ai-prediction" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                         <svg id="ai-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        AI予測を実行
+                    </button>
+                    <div id="ai-prediction-result" class="text-center mt-4 p-4 bg-gray-900/50 rounded-lg min-h-[80px]"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 rounded-xl shadow-xl w-full max-w-sm border border-gray-700">
+                <div class="p-6 text-center space-y-4">
+                    <h3 id="confirm-modal-title" class="text-xl font-bold text-white">確認</h3>
+                    <p id="confirm-modal-text" class="text-gray-300"></p>
+                    <div class="flex gap-4">
+                        <button id="confirm-modal-cancel" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">キャンセル</button>
+                        <button id="confirm-modal-ok" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-8 text-xs text-gray-500"><p>※これは投資助言ではありません。ご自身の判断で取引を行ってください。</p></footer>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
+
