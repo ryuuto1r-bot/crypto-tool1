@@ -1977,7 +1977,7 @@ window.addEventListener('load', () => {
         const labels = data.map(d => new Date(d.time * 1000));
         const closes = data.map(d => d.close);
         const ma1 = config.useEMA ? calculateEMA(closes, config.params.emaShort) : calculateSMA(closes, config.params.smaShort);
-        const ma2 = config.useEMA ? calculateEMA(closes, config.params.emaLong) : calculateSMA(closes, config.params.smaLong);
+        const ma2 = config.useEMA ? calculateEMA(closes, config.params.emaLong) : calculateSMA(closes, params.smaLong);
         const bb = calculateBollingerBands(closes, config.params.bbPeriod, config.params.bbStdDev);
         const annotations = {};
 
